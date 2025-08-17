@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(uuid())
+  name         String?
+  email        String?       @unique
+  password     String?
+  role         String        @default("STAFF")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  transactions Transaction[]
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+}
+
+model Product {
+  id               String            @id @default(uuid())
+  name             String
+  description      String?
+  categoryId       String?
+  image            String?
+  category         Category?         @relation(fields: [categoryId], references: [id])
+  price            Float
+  stock            Int               @default(0)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  transactionItems TransactionItem[]
+}
+
+model Transaction {
+  id        String            @id @default(uuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id])
+  total     Float
+  discount  Float?            @default(0)
+  status    String            @default("PENDING") // PENDING, PAID, CANCELLED, REFUNDED
+  payment   Payment?
+  items     TransactionItem[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+}
+
+model TransactionItem {
+  id            String      @id @default(uuid())
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  productId     String
+  product       Product     @relation(fields: [productId], references: [id])
+  quantity      Int
+  price         Float
+  discount      Float?      @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+model Payment {
+  id            String      @id @default(uuid())
+  transactionId String      @unique
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+
+  // Common fields
+  paymentType       String // CASH, QRIS, BANK_TRANSFER, CARD
+  grossAmount       Float
+  transactionStatus String   @default("PENDING") // PENDING, PAID, CANCELLED
+  transactionTime   DateTime @default(now())
+
+  // Only for Midtrans
+  midtransOrderId String?  @unique
+  fraudStatus     String?
+  rawResponse     Json?
+
+  // Only for Cash
+  amountPaid Float? // uang yang diterima dari customer
+  change     Float? // kembalian, jika ada
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
