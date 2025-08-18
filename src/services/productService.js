@@ -36,20 +36,15 @@ exports.createProduct = async (data) => {
 
 exports.updateProduct = async (id, data, file) => {
     try {
-        // Ambil data lama
         const existingProduct = await productRepository.findProductById(id);
         if (!existingProduct) throw new Error("Product not found");
 
         let newImagePath = existingProduct.image;
 
-        // Kalau ada file baru (upload gambar)
         if (file) {
             newImagePath = `uploads/${file.filename}`;
-            console.log("Mengupload file baru:", newImagePath);
 
-            // Hapus file lama kalau ada
-            const oldImagePath = path.resolve(process.cwd(), existingProduct.image);
-            console.log("Menghapus file lama:", oldImagePath);
+            const oldImagePath = path.resolve(process.cwd(),  existingProduct.image);
 
             if (existingProduct.image && fs.existsSync(oldImagePath)) {
                 fs.unlinkSync(oldImagePath);
@@ -57,7 +52,6 @@ exports.updateProduct = async (id, data, file) => {
 
         }
 
-        // Merge data
         const updatedData = {
             name: data.name && data.name.trim() !== "" ? data.name : existingProduct.name,
             description: data.description && data.description.trim() !== "" ? data.description : existingProduct.description,
