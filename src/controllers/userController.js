@@ -51,6 +51,29 @@ exports.updateUser = async (req, res) => {
     }
 }
 
+exports.resetPassword = async (req, res) => {
+    const { id } = req.params;
+    const { password } = req.body;
+    try {
+        const updatedUser = await userServices.resetPassword(id, password);
+        res.json(updatedUser);
+    } catch (error) {
+        console.error('Error resetting password:', error);
+        res.status(500).json({ message: 'Failed to reset password' });
+    }
+}
+
+exports.activateNonActivateUser = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const updatedUser = await userServices.activateNonActivateUser(id);
+        res.json(updatedUser);
+    } catch (error) {
+        console.error('Error activating/deactivating user:', error);
+        res.status(500).json({ message: 'Failed to activate/deactivate user' });
+    }
+}
+
 exports.deleteUser = async (req, res) => {
     const { id } = req.params;
     try {

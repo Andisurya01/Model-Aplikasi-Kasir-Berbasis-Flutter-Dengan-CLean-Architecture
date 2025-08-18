@@ -11,9 +11,25 @@ exports.createUser = async (data) => await prisma.user.create({
     data: data,
 });
 
+exports.resetPassword = async (id, newPassword) => {
+    try {
+        return await prisma.user.update({
+            where: { id },
+            data: { password: newPassword },
+        });
+    } catch (error) {
+        throw new Error("Error resetting password at Repository: " + error.message);
+    }
+}
+
 exports.updateUser = async (id, data) => await prisma.user.update({
     where: { id },
     data: { ...data },
+});
+
+exports.activateNonActivateUser = async (id, isActive) => await prisma.user.update({
+    where: { id },
+    data: { isActive },
 });
 
 exports.deleteUser = async (id) => await prisma.user.delete({

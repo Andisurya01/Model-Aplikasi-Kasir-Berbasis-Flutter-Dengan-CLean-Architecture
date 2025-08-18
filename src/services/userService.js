@@ -35,11 +35,35 @@ exports.createUser = async (data) => {
     }
 }
 
+exports.resetPassword = async (id, password) => {
+    try {
+        const newPassword = await authService.encryptedPassword(password);
+        return await userRepository.resetPassword(id, newPassword);
+    } catch (error) {
+        throw new Error("Error resetting password at Service: " + error.message);
+    }
+}
+
 exports.updateUser = async (id, data) => {
     try {
         return await userRepository.updateUser(id, data);
     } catch (error) {
         throw new Error("Error updating user at Service: " + error.message);
+    }
+}
+
+exports.activateNonActivateUser = async (id) => {
+    try {
+        const user = await userRepository.findUserById(id);
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        const isActive = !user.isActive;
+        const updatedUser = await userRepository.activateNonActivateUser(id, isActive);
+        return updatedUser;
+    } catch (error) {
+        throw new Error("Error activating/deactivating user at Service: " + error.message);
     }
 }
 
