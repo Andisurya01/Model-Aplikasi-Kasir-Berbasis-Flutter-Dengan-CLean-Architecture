@@ -6,6 +6,7 @@ const upload = require('../middleware/upload');
 router
     .get('/', productController.getAllProducts)
     .get('/:id', productController.getProductById)
+    .post('/change_status/:id', productController.activateNonActivateProduct)
     .post('/', upload.single('image'), productController.createProduct)
     .put('/:id', upload.single('image'), productController.updateProduct)
     .delete('/:id', productController.deleteProduct);

@@ -19,7 +19,7 @@ exports.getProductById = async (req, res) => {
     }
 }
 
-exports.createProduct = async (req, res) => {    
+exports.createProduct = async (req, res) => {
     const productData = req.body;
     if (req.file) {
         productData.image = req.file.filename;
@@ -35,8 +35,20 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     const { id } = req.params;
     const productData = req.body;
+    const file = req.file; // multer simpan file upload di sini
+
     try {
-        const updatedProduct = await productService.updateProduct(id, productData);
+        const updatedProduct = await productService.updateProduct(id, productData, file);
+        res.json(updatedProduct);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.activateNonActivateProduct = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const updatedProduct = await productService.activateNonActivateProduct(id);
         res.json(updatedProduct);
     } catch (error) {
         res.status(500).json({ error: error.message });

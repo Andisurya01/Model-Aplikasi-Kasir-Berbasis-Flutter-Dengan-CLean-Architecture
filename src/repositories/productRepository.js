@@ -18,6 +18,13 @@ exports.deleteProduct = async (id) => await prisma.product.delete({
     where: { id }
 });
 
+exports.activateNonActivateProduct = async (id, isActive) => {
+    return await prisma.product.update({
+        where: { id },
+        data: { isActive }
+    });
+};
+
 exports.findProductsByIds = async (ids) => {
   return await prisma.product.findMany({
     where: { id: { in: ids } },
