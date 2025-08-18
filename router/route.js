@@ -7,11 +7,13 @@ const product = require('../src/api/productApi');
 const transaction = require('../src/api/transactionApi');
 const category = require('../src/api/categoryApi');
 const payment = require('../src/api/paymentApi');
+const report = require('../src/api/reportApi');
 
 router.use('/auth', auth);
 router.use('/users', user);
 router.use('/products', product);
 router.use('/transactions', transaction);
+router.use('/reports', report);
 router.use('/categories', category);
 router.use('/payments', payment);
 

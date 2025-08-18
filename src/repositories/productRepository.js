@@ -17,3 +17,18 @@ exports.updateProduct = async (id, data) => await prisma.product.update({
 exports.deleteProduct = async (id) => await prisma.product.delete({
     where: { id }
 });
+
+exports.findProductsByIds = async (ids) => {
+  return await prisma.product.findMany({
+    where: { id: { in: ids } },
+    select: {
+      id: true,
+      name: true,
+      price: true,
+      image: true,
+      category: {
+        select: { id: true, name: true }
+      }
+    }
+  });
+};
