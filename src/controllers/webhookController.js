@@ -3,10 +3,12 @@ const transactionService = require('../services/transactionService');
 exports.midtransNotification = async (req, res) => {
   try {
     const notification = req.body;
+    console.log("Midtrans Notification:", notification);
+
     const orderId = notification.order_id;
     const transactionStatus = notification.transaction_status;
     const fraudStatus = notification.fraud_status;
-
+    
     // Default PENDING
     let status = "PENDING";
 

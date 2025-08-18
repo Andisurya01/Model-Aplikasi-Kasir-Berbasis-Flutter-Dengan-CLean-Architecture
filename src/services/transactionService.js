@@ -1,5 +1,6 @@
 const transactionRepository = require('../repositories/transactionRepository');
 const snap = require('../utils/midtrans');
+
 exports.createCashTransaction = async (data, userId) => {
     try {
         const total = data.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -99,7 +100,7 @@ exports.createMidtransTransaction = async (data, userId) => {
                     paymentType: "MIDTRANS",
                     grossAmount: total,
                     transactionStatus: "PENDING",
-                    midtransOrderId: snapResponse.order_id,
+                    midtransOrderId: orderId,
                     fraudStatus: snapResponse.fraud_status,
                     rawResponse: snapResponse ?? {},
                 },
@@ -118,31 +119,15 @@ exports.createMidtransTransaction = async (data, userId) => {
 };
 
 exports.updateTransactionStatus = async (orderId, status, rawNotification) => {
-    try {
-        // update payment dulu
-        const updatedPayment = await prisma.payment.update({
-            where: { midtransOrderId: orderId },
-            data: {
-                transactionStatus: status,
-                fraudStatus: rawNotification.fraud_status ?? null,
-                rawResponse: rawNotification,
-                amountPaid: rawNotification.gross_amount ? parseInt(rawNotification.gross_amount) : null,
-            },
-            include: { transaction: true },
-        });
-
-        // update juga tabel transaction biar konsisten
-        await prisma.transaction.update({
-            where: { id: updatedPayment.transactionId },
-            data: {
-                status: status,
-            },
-        });
-
-        return updatedPayment;
-    } catch (error) {
-        throw new Error("Failed to update transaction status at Service: " + error.message);
-    }
+  try {
+    return await transactionRepository.updatePaymentAndTransaction(
+      orderId,
+      status,
+      rawNotification
+    );
+  } catch (error) {
+    throw new Error("Service: Failed to update transaction status -> " + error.message);
+  }
 };
 
 
