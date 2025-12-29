@@ -13,11 +13,11 @@ exports.getAllUsers = async (req, res) => {
 exports.getUserById = async (req, res) => {
     const { id } = req.params;
     console.log('User ID:', id);
-    
+
     try {
         const user = await userServices.findUserById(id);
         console.log('User:', user);
-        
+
         res.status(200).json(user);
     } catch (error) {
         console.error('Error fetching user:', error);
@@ -28,7 +28,7 @@ exports.getUserById = async (req, res) => {
 exports.createUser = async (req, res) => {
     const body = req.body;
     console.log('User Body:', body);
-    
+
     try {
         const user = await userServices.createUser(body);
         console.log('Created User:', user);
@@ -52,11 +52,15 @@ exports.updateUser = async (req, res) => {
 }
 
 exports.resetPassword = async (req, res) => {
-    const { id } = req.params;
-    const { password } = req.body;
+
+    const { email, password } = req.body;
+    console.log('Reset Password Body:', { email, password });
     try {
-        const updatedUser = await userServices.resetPassword(id, password);
-        res.json(updatedUser);
+        const updatedUser = await userServices.resetPassword(email, password);
+        res.status(201).json({
+            status: "PASSWORD RESET SUCCESS",
+            data: updatedUser,
+        });
     } catch (error) {
         console.error('Error resetting password:', error);
         res.status(500).json({ message: 'Failed to reset password' });
@@ -88,26 +92,26 @@ exports.deleteUser = async (req, res) => {
 exports.getUserByEmail = async (req, res) => {
     const { email } = req.params;
     console.log('User Email:', email);
-    
+
     try {
         const user = await userServices.findUserByEmail(email);
         console.log('User:', user);
-        
+
         res.status(200).json(user);
     } catch (error) {
         console.error('Error fetching user by email:', error);
-        res.status(500).json({ message: 'Failed to fetch user by email' });
+        res.status(error.statusCode || 500).json({ message: error.message || 'Failed to fetch user by email' });
     }
 }
 
 exports.getUserByName = async (req, res) => {
     const { name } = req.params;
     console.log('User Name:', name);
-    
+
     try {
         const user = await userServices.findUserByName(name);
         console.log('User:', user);
-        
+
         res.status(200).json(user);
     } catch (error) {
         console.error('Error fetching user by name:', error);

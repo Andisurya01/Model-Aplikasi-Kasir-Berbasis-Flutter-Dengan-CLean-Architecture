@@ -2,6 +2,7 @@
 const Joi = require('joi');
 
 const userPasswordSchema = Joi.object({
+  email: Joi.string().email().required(),
   password: Joi.string()
     .min(8)                                  // minimal 8 karakter
     .pattern(new RegExp('(?=.*[a-z])'))      // harus ada huruf kecil

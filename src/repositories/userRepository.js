@@ -43,3 +43,29 @@ exports.findUserByEmail = async (email) => await prisma.user.findUnique({
 exports.findUserByName = async (name) => await prisma.user.findUnique({
     where: { name },
 });
+
+exports.saveOtp = async (otp, expiresAt, userId) => {
+    const response = await prisma.otp.create({
+        data: {
+            code : otp,
+            expiresAt,
+            userId
+        }
+    });
+    return response;
+}
+
+exports.findOtp = async (code) => {
+    return await prisma.otp.findFirst({
+        where: {
+            code
+        }
+    });
+};
+
+exports.incrementOtpAttempts = async (id) => {
+    return await prisma.otp.update({
+        where: { id },
+        data: { attempts: { increment: 1 } },
+    });
+};

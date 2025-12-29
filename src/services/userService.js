@@ -1,5 +1,6 @@
 const userRepository = require("../repositories/userRepository");
 const authService = require("./authService");
+const  ApplicationError = require("../../config/errors/ApplicationError");
 exports.findAllUsers = async () => {
     try {
         return await userRepository.findAllUsers();
@@ -20,25 +21,30 @@ exports.createUser = async (data) => {
     try {
         const { name, email, password, role } = data;
         const encryptedPassword = await authService.encryptedPassword(password);
-        
+
         const user = await userRepository.createUser({
             name,
             email,
             password: encryptedPassword,
             role,
-        })        
+        })
         console.log(user);
-        
+
         return user;
     } catch (error) {
         throw new Error("Error creating user at Service: " + error.message);
     }
 }
 
-exports.resetPassword = async (id, password) => {
+exports.resetPassword = async (email, password) => {
     try {
+        console.log(email, password);
+        const user = await userRepository.findUserByEmail(email);
+        if (!user) {
+            throw new ApplicationError("User not found", 404);
+        }
         const newPassword = await authService.encryptedPassword(password);
-        return await userRepository.resetPassword(id, newPassword);
+        return await userRepository.resetPassword(user.id, newPassword);
     } catch (error) {
         throw new Error("Error resetting password at Service: " + error.message);
     }
@@ -56,9 +62,8 @@ exports.activateNonActivateUser = async (id) => {
     try {
         const user = await userRepository.findUserById(id);
         if (!user) {
-            throw new Error("User not found");
+            throw new ApplicationError("User not found", 404);
         }
-
         const isActive = !user.isActive;
         const updatedUser = await userRepository.activateNonActivateUser(id, isActive);
         return updatedUser;
@@ -77,9 +82,14 @@ exports.deleteUser = async (id) => {
 
 exports.findUserByEmail = async (email) => {
     try {
-        return await userRepository.findUserByEmail(email);
-    } catch (error) {
-        throw new Error("Error fetching user by email at Service: " + error.message);
+        const user = await userRepository.findUserByEmail(email);
+
+        if (!user) {
+            throw new ApplicationError("User not found", 404);
+        }
+        return user;
+    } catch (err) {
+        throw new ApplicationError("service : " + err.message, err.statusCode || 500);
     }
 }
 

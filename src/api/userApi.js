@@ -9,7 +9,7 @@ router
     .get('/:id', userController.getUserById)
     .get('/email/:email', userController.getUserByEmail)
     .post('/change_status/:id', userController.activateNonActivateUser)
-    .post('/reset_password/:id', validate(userPasswordSchema), userController.resetPassword)
+    .post('/reset_password', validate(userPasswordSchema), userController.resetPassword)
     .put('/:id', userController.updateUser)
     .post('/', userController.createUser)
     .delete('/:id', userController.deleteUser);

@@ -11,9 +11,32 @@ exports.getAllProducts = async (req, res) => {
 
 exports.getProductById = async (req, res) => {
     const { id } = req.params;
+    console.log(id);
+
     try {
         const product = await productService.findProductById(id);
+
         res.json(product);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+exports.getByCategoryIdAndSearch = async (req, res) => {
+    const { category, search } = req.query;
+    try {
+        const products = await productService.findProductsByCategoryAndSearch(category, search);
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+exports.getByCategoryIdAndSearchForInventory = async (req, res) => {
+    const { category, search } = req.query;
+    try {
+        const products = await productService.findProductsByCategoryAndSearchForInventory(category, search);
+        res.json(products);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -24,6 +47,8 @@ exports.createProduct = async (req, res) => {
     if (req.file) {
         productData.image = req.file.filename;
     }
+    console.log(productData);
+    
     try {
         const newProduct = await productService.createProduct(productData);
         res.status(201).json(newProduct);
@@ -32,9 +57,22 @@ exports.createProduct = async (req, res) => {
     }
 }
 
+exports.addStock = async (req, res) => {
+    const { id } = req.params;
+    const { quantity } = req.body;
+    try {
+        const updatedProduct = await productService.addStock(id, quantity);
+        res.json(updatedProduct);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.updateProduct = async (req, res) => {
     const { id } = req.params;
     const productData = req.body;
+    console.log("testing update produk" + productData.price);
+
     const file = req.file; // multer simpan file upload di sini
 
     try {

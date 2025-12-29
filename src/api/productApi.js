@@ -6,9 +6,12 @@ const upload = require('../middleware/upload');
 router
     .get('/', productController.getAllProducts)
     .get('/:id', productController.getProductById)
-    .post('/change_status/:id', productController.activateNonActivateProduct)
     .post('/', upload.single('image'), productController.createProduct)
     .put('/:id', upload.single('image'), productController.updateProduct)
+    .post('/add_stock/:id', productController.addStock)
+    .post('/search', productController.getByCategoryIdAndSearch)
+    .post('/inventory/search', productController.getByCategoryIdAndSearchForInventory)
+    .post('/change_status/:id', productController.activateNonActivateProduct)
     .delete('/:id', productController.deleteProduct);
 
 module.exports = router;

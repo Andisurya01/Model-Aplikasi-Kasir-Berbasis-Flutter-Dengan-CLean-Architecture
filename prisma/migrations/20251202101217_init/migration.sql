@@ -5,7 +5,7 @@ CREATE TYPE "public"."PaymentStatus" AS ENUM ('PENDING', 'PAID', 'CANCELLED');
 CREATE TABLE "public"."User" (
     "id" TEXT NOT NULL,
     "name" TEXT,
-    "email" TEXT,
+    "email" TEXT NOT NULL,
     "password" TEXT,
     "role" TEXT NOT NULL DEFAULT 'STAFF',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
@@ -13,6 +13,18 @@ CREATE TABLE "public"."User" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "public"."Otp" (
+    "id" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "attempts" INTEGER NOT NULL DEFAULT 0,
+
+    CONSTRAINT "Otp_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -48,7 +60,7 @@ CREATE TABLE "public"."Transaction" (
     "userId" TEXT NOT NULL,
     "total" DOUBLE PRECISION NOT NULL,
     "discount" DOUBLE PRECISION DEFAULT 0,
-    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "status" "public"."PaymentStatus" NOT NULL DEFAULT 'PENDING',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -73,9 +85,10 @@ CREATE TABLE "public"."TransactionItem" (
 CREATE TABLE "public"."Payment" (
     "id" TEXT NOT NULL,
     "transactionId" TEXT NOT NULL,
+    "orderId" TEXT NOT NULL,
     "paymentType" TEXT NOT NULL,
     "grossAmount" DOUBLE PRECISION NOT NULL,
-    "transactionStatus" TEXT NOT NULL DEFAULT 'PENDING',
+    "transactionStatus" "public"."PaymentStatus" NOT NULL DEFAULT 'PENDING',
     "transactionTime" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "midtransOrderId" TEXT,
     "fraudStatus" TEXT,
@@ -92,10 +105,19 @@ CREATE TABLE "public"."Payment" (
 CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
 
 -- CreateIndex
+CREATE INDEX "Otp_userId_idx" ON "public"."Otp"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Payment_transactionId_key" ON "public"."Payment"("transactionId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Payment_orderId_key" ON "public"."Payment"("orderId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Payment_midtransOrderId_key" ON "public"."Payment"("midtransOrderId");
+
+-- AddForeignKey
+ALTER TABLE "public"."Otp" ADD CONSTRAINT "Otp_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "public"."Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "public"."Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;

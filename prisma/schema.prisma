@@ -16,13 +16,26 @@ datasource db {
 model User {
   id           String        @id @default(uuid())
   name         String?
-  email        String?       @unique
+  email        String        @unique
   password     String?
   role         String        @default("STAFF")
   isActive     Boolean       @default(true)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   transactions Transaction[]
+  otps         Otp[] // Relasi ke OTP
+}
+
+model Otp {
+  id        String   @id @default(uuid())
+  code      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  attempts  Int      @default(0)
+
+  @@index([userId])
 }
 
 model Category {
@@ -55,7 +68,7 @@ model Transaction {
   user      User              @relation(fields: [userId], references: [id])
   total     Float
   discount  Float?            @default(0)
-  status    String            @default("PENDING") // PENDING, PAID, CANCELLED, REFUNDED
+  status    PaymentStatus     @default(PENDING)
   payment   Payment?
   items     TransactionItem[]
   createdAt DateTime          @default(now())
@@ -82,24 +95,24 @@ enum PaymentStatus {
 }
 
 model Payment {
-  id            String      @id @default(uuid())
-  transactionId String      @unique
-  transaction   Transaction @relation(fields: [transactionId], references: [id])
-
+  id                String        @id @default(uuid())
+  transactionId     String        @unique
+  transaction       Transaction   @relation(fields: [transactionId], references: [id])
+  orderId           String        @unique
   // Common fields
   paymentType       String // CASH, QRIS, BANK_TRANSFER, CARD
   grossAmount       Float
-  transactionStatus String   @default("PENDING") // PENDING, PAID, CANCELLED
-  transactionTime   DateTime @default(now())
+  transactionStatus PaymentStatus @default(PENDING) // PENDING, PAID, CANCELLED
+  transactionTime   DateTime      @default(now())
 
   // Only for Midtrans
-  midtransOrderId String?  @unique
+  midtransOrderId String? @unique
   fraudStatus     String?
   rawResponse     Json?
 
   // Only for Cash
-  amountPaid Float? // uang yang diterima dari customer
-  change     Float? // kembalian, jika ada
+  amountPaid Float?
+  change     Float?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
